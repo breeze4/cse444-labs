@@ -251,9 +251,23 @@ public class TupleDesc implements Serializable {
 		throw new UnsupportedOperationException("unimplemented");
 	}
 
+	/**
+	 * Returns a String describing this descriptor. It should be of the form
+	 * "fieldType[0](fieldName[0]), ..., fieldType[M](fieldName[M])", although
+	 * the exact format does not matter.
+	 * 
+	 * @return String describing this descriptor.
+	 */
 	@Override
 	public String toString() {
-		return "TupleDesc [items=" + items + ", numFields()=" + numFields()
-				+ ", getSize()=" + getSize() + "]";
+		StringJoiner sj = new StringJoiner(",");
+		for (TDItem item : items) {
+			sj.add(item.toString());
+		}
+		return sj.toString();
 	}
+//	public String toString() {
+//		// some code goes here
+//		return "";
+//	}
 }

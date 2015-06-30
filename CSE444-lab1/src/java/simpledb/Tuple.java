@@ -1,8 +1,21 @@
 package simpledb;
 
+import static simpledb.Type.INT_TYPE;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.StringJoiner;
+
+import junit.framework.Assert;
 
 /**
  * Tuple maintains information about the contents of a tuple. Tuples have a
@@ -12,6 +25,11 @@ import java.util.Iterator;
 public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    private TupleDesc desc;
+    private RecordId recordId;
+
+	private List<Field> fields = new ArrayList<Field>();
 
     /**
      * Create a new tuple with the specified schema (type).
@@ -22,14 +40,25 @@ public class Tuple implements Serializable {
      */
     public Tuple(TupleDesc td) {
         // some code goes here
+    	init(td);
     }
+
+	private void init(TupleDesc td) {
+		Assert.assertFalse(td.numFields() < 1);
+    	desc = td;
+    	for(int i = 0; i < td.numFields(); i++) {
+    		if(td.getFieldType(i) == INT_TYPE) {
+    			fields.add(i, new IntField(0));
+    		}
+    	}
+	}
 
     /**
      * @return The TupleDesc representing the schema of this tuple.
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return desc;
     }
 
     /**
@@ -38,7 +67,7 @@ public class Tuple implements Serializable {
      */
     public RecordId getRecordId() {
         // some code goes here
-        return null;
+        return recordId;
     }
 
     /**
@@ -49,6 +78,7 @@ public class Tuple implements Serializable {
      */
     public void setRecordId(RecordId rid) {
         // some code goes here
+    	recordId = rid;
     }
 
     /**
@@ -61,6 +91,7 @@ public class Tuple implements Serializable {
      */
     public void setField(int i, Field f) {
         // some code goes here
+    	fields.add(i, f);
     }
 
     /**
@@ -71,7 +102,13 @@ public class Tuple implements Serializable {
      */
     public Field getField(int i) {
         // some code goes here
-        return null;
+    	Field field = null;
+    	try {
+    		field = fields.get(i);
+    	} catch (IndexOutOfBoundsException e) {
+    		e.printStackTrace();
+    	}
+		return field;
     }
 
     /**
@@ -84,7 +121,12 @@ public class Tuple implements Serializable {
      */
     public String toString() {
         // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+    	StringJoiner sj = new StringJoiner("\t", "", "\n");
+    	for (Field field : fields) {
+    		sj.add(field.toString());
+		}
+        String string = sj.toString();
+		return string;
     }
     
     /**
@@ -94,7 +136,7 @@ public class Tuple implements Serializable {
     public Iterator<Field> fields()
     {
         // some code goes here
-        return null;
+        return fields.iterator();
     }
     
     /**
@@ -103,5 +145,6 @@ public class Tuple implements Serializable {
     public void resetTupleDesc(TupleDesc td)
     {
         // some code goes here
+    	init(td);
     }
 }
