@@ -1,7 +1,9 @@
 package simpledb;
 
 import java.io.*;
-
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -25,6 +27,10 @@ public class BufferPool {
     other classes. BufferPool should use the numPages argument to the
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
+    
+    private int maxPages;
+	private Map<PageId, Page> pages = new LinkedHashMap<>();
+	private int pageCount = 0;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -33,6 +39,7 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // some code goes here
+    	this.maxPages = numPages;
     }
     
     public static int getPageSize() {
@@ -62,7 +69,26 @@ public class BufferPool {
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+    	
+    	Page page = pages.get(pid);
+    	if(page != null) {
+    		return page;
+    	} else {
+    		Catalog catalog = Database.getCatalog();
+        	for (Iterator<Integer> tableIter = catalog.tableIdIterator(); tableIter.hasNext();) {
+        		Integer tableId = (Integer) tableIter.next();
+        		DbFile file = catalog.getDatabaseFile(tableId);
+				page = file.readPage(pid);
+				// TODO: evict page properly, for now just overwrite the existing
+				if(pageCount >= maxPages) {
+					throw new DbException("Cannot store any more pages in buffer pool!");
+				}
+        		pages.put(pid, page);
+        		pageCount++;
+        		break;
+    		}
+        	return page;
+    	}
     }
 
     /**
